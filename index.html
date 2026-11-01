@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Mission: Exam Countdown - Eng. Sara T Olama</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for Celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FAFAFA;
+            color: #1F2937;
+            overflow-x: hidden;
+        }
+
+        .font-display {
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+
+        /* Breathing Animation for Characters & Mascots */
+        @keyframes float-breath {
+            0%, 100% {
+                transform: translateY(0px) scale(1);
+            }
+            50% {
+                transform: translateY(-8px) scale(1.03);
+            }
+        }
+
+        .animate-breath {
+            animation: float-breath 3.5s ease-in-out infinite;
+        }
+
+        /* Pulsing effects */
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(99, 102, 241, 0.8);
+            }
+        }
+
+        .animate-pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+
+        /* Floating Badge Animation */
+        @keyframes badge-float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(3deg); }
+        }
+        .animate-badge {
+            animation: badge-float 4s ease-in-out infinite;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 4px;
+        }
+
+        /* Slide Transition CSS */
+        .slide-enter {
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+        .slide-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Glassmorphism Card Style for White background contrast */
+        .white-card {
+            background: #FFFFFF;
+            border: 2px solid #F1F5F9;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+            border-radius: 1.5rem;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- TOP HEADER / NAVBAR WITH SIGNATURE -->
+    <header class="w-full bg-white border-b border-slate-200 sticky top-0 z-50 px-4 py-3 shadow-sm">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <!-- Brand & Mission Title -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+                    <i class="fa-solid fa-rocket animate-breath"></i>
+                </div>
+                <div>
+                    <h1 class="font-display text-lg font-bold text-slate-800 leading-tight">Math Mission</h1>
+                    <p class="text-xs text-indigo-600 font-semibold tracking-wide">Decimals & Number Mastery</p>
+                </div>
+            </div>
+
+            <!-- Signature (Required on Every Screen) -->
+            <div class="flex items-center space-x-2 bg-indigo-50 border border-indigo-100 px-3.5 py-1.5 rounded-full shadow-sm">
+                <i class="fa-solid fa-graduation-cap text-indigo-600 text-sm"></i>
+                <span class="text-xs md:text-sm font-bold text-indigo-900 tracking-wide">Eng. Sara T Olama</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN GAME CONTAINER -->
+    <main class="flex-grow flex items-center justify-center p-3 md:p-6">
+        <div class="w-full max-w-4xl min-h-[580px] white-card p-4 md:p-8 flex flex-col justify-between relative overflow-hidden">
+            
+            <!-- PROGRESS & STATS BAR (Hidden on Welcome Screen) -->
+            <div id="game-stats-bar" class="hidden mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-4">
+                        <span id="level-badge" class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-amber-200">
+                            Unit 1: Step 1/7
+                        </span>
+                        <div class="flex items-center space-x-1 text-slate-600 text-sm font-semibold">
+                            <i class="fa-solid fa-fire text-orange-500"></i>
+                            <span>Streak: <span id="streak-counter" class="text-orange-600 font-bold">0</span></span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-3">
+                        <div class="flex items-center space-x-1 text-indigo-700 font-bold text-base">
+                            <i class="fa-solid fa-star text-amber-400"></i>
+                            <span id="score-display">0</span> XP
+                        </div>
+                        <button onclick="toggleAudio()" id="audio-btn" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden border border-slate-200">
+                    <div id="progress-bar" class="bg-indigo-600 h-full w-0 transition-all duration-500 rounded-full"></div>
+                </div>
+            </div>
+
+            <!-- DYNAMIC SLIDE CONTAINER -->
+            <div id="slide-content" class="flex-grow flex flex-col justify-center">
+                <!-- Content injected via JS -->
+            </div>
+
+            <!-- FOOTER SIGNATURE & WATERMARK -->
+            <div class="mt-6 pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
+                <span class="flex items-center gap-1">
+                    <i class="fa-regular fa-clock"></i> Est. ~10 Min Exam Review
+                </span>
+                <span class="font-semibold text-slate-500">Created by: <strong class="text-indigo-600">Eng. Sara T Olama</strong></span>
+            </div>
+        </div>
+    </main>
+
+    <!-- FLOATING MASCOT HELPER -->
+    <div id="mascot-container" class="fixed bottom-4 right-4 z-40 hidden md:flex items-end space-x-2 pointer-events-none">
+        <div id="mascot-speech" class="bg-white border-2 border-indigo-200 rounded-2xl p-3 shadow-lg max-w-xs text-xs font-semibold text-slate-700 mb-8 slide-enter pointer-events-auto">
+            Ready to conquer your Math Exam? Let's master these tricks!
+        </div>
+        <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center text-white text-2xl shadow-xl animate-breath border-4 border-white pointer-events-auto cursor-pointer" onclick="triggerMascotTip()">
+            🤖
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT GAME LOGIC -->
+    <script>
+        // Game State Variables
+        let currentStep = 0;
+        let score = 0;
+        let streak = 0;
+        let soundEnabled = true;
+        let speedRoundIndex = 0;
+        let speedRoundTimer = null;
+        let speedRoundTimeLeft = 180; // 3 Minutes total for speed round
+        let speedRoundScore = 0;
+
+        // Web Audio API Sound Synthesizer (No external audio dependencies)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(180, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'fanfare') {
+                    const notes = [440, 554.37, 659.25, 880];
+                    notes.forEach((freq, idx) => {
+                        const noteOsc = audioCtx.createOscillator();
+                        const noteGain = audioCtx.createGain();
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(audioCtx.destination);
+                        noteOsc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.12);
+                        noteGain.gain.setValueAtTime(0.12, audioCtx.currentTime + idx * 0.12);
+                        noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.12 + 0.3);
+                        noteOsc.start(audioCtx.currentTime + idx * 0.12);
+                        noteOsc.stop(audioCtx.currentTime + idx * 0.12 + 0.3);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio play error:", e);
+            }
+        }
+
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('audio-btn');
+            btn.innerHTML = soundEnabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
+        }
+
+        // Curriculum Database (Strict Question -> Answer Structure)
+        const lessons = [
+            // Slide 1: Welcome (Handled dynamically)
+            // Slide 2: Unit 1 - Place Value & Word Form
+            {
+                unit: "Unit 1",
+                title: "Place Value & Word Form",
+                icon: "fa-calculator",
+                rule: "Every digit after the decimal point has a special name: 1st = Tenths, 2nd = Hundredths, 3rd = Thousandths.",
+                trick: "Use a place value chart in your head. Don't mix up 'tens' (before decimal) with 'tenths' (after decimal)!",
+                question: "Write the number 45.207 in word form.",
+                type: "mcq",
+                options: [
+                    "Forty-five and two hundred seven hundredths",
+                    "Forty-five and two hundred seven thousandths",
+                    "Forty-five point twenty seven",
+                    "Four hundred five and two hundred seven"
+                ],
+                correctAnswer: 1,
+                detailedSolution: "Forty-five and two hundred seven thousandths",
+                explanation: "The whole number part is 'Forty-five'. The decimal point is read as 'and'. The decimal part is 207, which ends in the 3rd place (Thousandths). Thus: Forty-five and two hundred seven thousandths."
+            },
+            // Slide 3: Unit 1 - The Rounding Rule
+            {
+                unit: "Unit 1",
+                title: "The Rounding Rule",
+                icon: "fa-bullseye",
+                rule: "1. Underline target place value. 2. Look at neighbor to the right. 3. 5 or more? Add 1. 4. 4 or less? Let it rest.",
+                trick: "Circle the digit to the right before deciding! It locks your focus directly on the rule.",
+                question: "Round 8.294 to the nearest tenth.",
+                type: "mcq",
+                options: [
+                    "8.2",
+                    "8.3",
+                    "8.29",
+                    "8.30"
+                ],
+                correctAnswer: 1,
+                detailedSolution: "Look at neighbor 9. Since 9 ≥ 5, 2 becomes 3. Answer = 8.3",
+                explanation: "The target place (tenths) is 2. The neighbor to its right is 9. Since 9 is 5 or more, add 1 to 2, making it 3. Drop remaining digits: 8.3."
+            },
+            // Slide 4: Unit 1 - Adding & Subtracting Decimals
+            {
+                unit: "Unit 1",
+                title: "Adding & Subtracting Decimals",
+                icon: "fa-plus-minus",
+                rule: "When adding or subtracting, the decimal points must ALWAYS line up directly on top of each other.",
+                trick: "If numbers have different lengths (e.g., 5.2 + 4.15), add 'ghost zeros' (5.20 + 4.15) so you don't line up incorrectly!",
+                question: "Calculate: 12.4 + 3.75",
+                type: "mcq",
+                options: [
+                    "15.15",
+                    "16.15",
+                    "15.79",
+                    "16.45"
+                ],
+                correctAnswer: 1,
+                detailedSolution: "Add a ghost zero: 12.40 + 3.75 = 16.15",
+                explanation: "Align decimals vertically by appending a ghost zero: 12.40 + 3.75. 0+5=5, 4+7=11 (carry 1), 1+12+3=16. Answer: 16.15."
+            },
+            // Slide 5: Unit 2 - Comparing Decimals
+            {
+                unit: "Unit 2",
+                title: "Comparing Decimals",
+                icon: "fa-magnifying-glass",
+                rule: "To compare decimals, look at digits from left to right. Stop at the first difference.",
+                trick: "Add ghost zeros to the end so all numbers have equal length! (e.g., 6.70 vs 6.65 -> 70 is bigger than 65!).",
+                question: "Which decimal is greater: 4.508 or 4.58?",
+                type: "mcq",
+                options: [
+                    "4.508",
+                    "4.58",
+                    "They are equal",
+                    "Cannot be determined"
+                ],
+                correctAnswer: 1,
+                detailedSolution: "4.580 is greater than 4.508, so 4.58 is greater.",
+                explanation: "Attach a ghost zero to 4.58 to make it 4.580. Now compare 4.508 vs 4.580. Looking at the hundredths place: 8 is greater than 0. So 4.58 is greater!"
+            },
+            // Slide 6: Unit 2 - Variables & The Balance Scale
+            {
+                unit: "Unit 2",
+                title: "Variables & Balance Scale",
+                icon: "fa-scale-balanced",
+                rule: "A variable is a missing number. To solve, use inverse operations (opposite action: + becomes -, - becomes +).",
+                trick: "Think of a balance scale. Whatever operation you do to one side, you MUST do to the other to keep balance!",
+                question: "Solve for m:  m - 2.8 = 7.5",
+                type: "mcq",
+                options: [
+                    "m = 4.7",
+                    "m = 10.3",
+                    "m = 9.3",
+                    "m = 2.8"
+                ],
+                correctAnswer: 1,
+                detailedSolution: "Inverse of minus is plus. Add 2.8 to both sides: 7.5 + 2.8 = 10.3",
+                explanation: "To isolate m, perform the inverse of subtracting 2.8: add 2.8 to both sides. m = 7.5 + 2.8 = 10.3."
+            },
+            // Slide 7: Unit 2 - Prime Factorization & GCF
+            {
+                unit: "Unit 2",
+                title: "Prime Factorization & GCF",
+                icon: "fa-tree",
+                rule: "Prime numbers have only 2 factors (1 and itself). Prime factorization breaks a number down into prime factors.",
+                trick: "GCF = Greatest Common Factor. Use Factor Trees! GCF is used for splitting or grouping items equally.",
+                question: "Find the GCF of 18 and 27.",
+                type: "mcq",
+                options: [
+                    "3",
+                    "6",
+                    "9",
+                    "54"
+                ],
+                correctAnswer: 2,
+                detailedSolution: "Factors of 18: 1,2,3,6,9,18 | Factors of 27: 1,3,9,27 -> GCF = 9",
+                explanation: "List common factors shared by 18 and 27: {1, 3, 9}. The largest shared factor is 9."
+            },
+            // Slide 8: Unit 2 - The LCM Trick
+            {
+                unit: "Unit 2",
+                title: "The LCM Trick",
+                icon: "fa-rotate",
+                rule: "LCM is the smallest multiple shared by two numbers in their multiplication tables.",
+                trick: "LCM = Least Common Multiple. Use LCM for repeating events that 'happen together again' (e.g. bells, buses).",
+                question: "What is the LCM of 4 and 10?",
+                type: "mcq",
+                options: [
+                    "2",
+                    "20",
+                    "40",
+                    "10"
+                ],
+                correctAnswer: 1,
+                detailedSolution: "Multiples of 4: 4, 8, 12, 16, 20... | Multiples of 10: 10, 20... -> LCM = 20",
+                explanation: "Multiples of 4 are 4, 8, 12, 16, 20, 24... Multiples of 10 are 10, 20, 30... The smallest number they share is 20."
+            }
+        ];
+
+        // Speed Round Flashcard Database (3-Minute Rapid Fire)
+        const speedRoundQuestions = [
+            {
+                q: "What is the place value of 6 in 9.126?",
+                options: ["Tenths", "Hundredths", "Thousandths", "Tens"],
+                ans: 2,
+                exp: "6 is in the 3rd decimal position = Thousandths!"
+            },
+            {
+                q: "What is the inverse operation of Subtraction?",
+                options: ["Multiplication", "Addition", "Division", "Rounding"],
+                ans: 1,
+                exp: "Inverse means opposite! The opposite of subtraction is addition."
+            },
+            {
+                q: "Is 1 a prime number?",
+                options: ["YES", "NO! It only has 1 factor", "Sometimes", "Only in decimals"],
+                ans: 1,
+                exp: "NO! Prime numbers must have exactly TWO distinct factors (1 and itself). 1 only has 1 factor."
+            },
+            {
+                q: "Two buses arrive every 10 & 15 mins. Do we use GCF or LCM to find when they arrive together?",
+                options: ["GCF (Splitting)", "LCM (Events together again)", "Place Value", "Rounding"],
+                ans: 1,
+                exp: "LCM! Events happening together again on a repeating cycle always require Least Common Multiple."
+            }
+        ];
+
+        // RENDER FUNCTIONS
+
+        // Initialize App
+        window.onload = function() {
+            renderWelcomeSlide();
+        };
+
+        function renderWelcomeSlide() {
+            document.getElementById('game-stats-bar').classList.add('hidden');
+            const container = document.getElementById('slide-content');
+            
+            container.innerHTML = `
+                <div class="text-center py-6 px-2 slide-active flex flex-col items-center">
+                    <div class="inline-block bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-widest mb-4 border border-indigo-200 animate-badge">
+                        <i class="fa-solid fa-graduation-cap mr-1"></i> Exam Rapid-Fire Review
+                    </div>
+
+                    <h1 class="font-display text-3xl md:text-5xl font-bold text-slate-800 mb-4 leading-tight">
+                        Math Mission: <span class="text-indigo-600">Exam Countdown!</span>
+                    </h1>
+
+                    <p class="text-slate-600 text-sm md:text-base max-w-xl mx-auto mb-8 leading-relaxed">
+                        Master rules, learn secret exam tricks, and conquer practice challenges in this ~10 minute interactive review session!
+                    </p>
+
+                    <!-- Mascot & Teacher Note Card -->
+                    <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 md:p-6 max-w-lg w-full mb-8 text-left shadow-sm flex items-start space-x-4">
+                        <div class="text-3xl animate-breath">👩‍🏫</div>
+                        <div>
+                            <h4 class="font-bold text-amber-900 text-sm md:text-base">Teacher's Note & Mission Briefing</h4>
+                            <p class="text-xs md:text-sm text-amber-800 mt-1 leading-snug">
+                                Welcome students! We will look at each core rule, discover exam-winning tricks, complete practice questions, and finish with a 3-minute Speed Round!
+                            </p>
+                            <span class="block mt-2 text-xs font-bold text-indigo-700">— Eng. Sara T Olama</span>
+                        </div>
+                    </div>
+
+                    <!-- Start Button -->
+                    <button onclick="startGame()" class="animate-pulse-glow bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg px-10 py-4 rounded-xl shadow-xl hover:shadow-indigo-300/50 transition-all transform hover:-translate-y-1 flex items-center gap-3">
+                        <span>Launch Mission</span>
+                        <i class="fa-solid fa-circle-play"></i>
+                    </button>
+                </div>
+            `;
+        }
+
+        function startGame() {
+            playSound('click');
+            currentStep = 0;
+            score = 0;
+            streak = 0;
+            document.getElementById('game-stats-bar').classList.remove('hidden');
+            document.getElementById('mascot-container').classList.remove('hidden');
+            renderLessonSlide(currentStep, false); // false = Question Slide (Slide A)
+        }
+
+        function updateStats() {
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('streak-counter').innerText = streak;
+            
+            const totalSteps = lessons.length * 2 + 1; // Lessons Q+A plus speed round
+            const progress = Math.min(100, Math.round(((currentStep * 2) / totalSteps) * 100));
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+        }
+
+        // Render Lesson Question (Slide A) or Explanation (Slide B)
+        function renderLessonSlide(index, isAnswerRevealed) {
+            updateStats();
+            const lesson = lessons[index];
+            const container = document.getElementById('slide-content');
+            
+            document.getElementById('level-badge').innerText = `${lesson.unit}: Topic ${index + 1}/${lessons.length}`;
+
+            if (!isAnswerRevealed) {
+                // SLIDE A: RULE + TRICK + UNANSWERED QUESTION
+                container.innerHTML = `
+                    <div class="slide-enter slide-active space-y-6">
+                        <!-- Header -->
+                        <div class="flex items-center space-x-3 pb-3 border-b border-slate-100">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                                <i class="fa-solid ${lesson.icon}"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">${lesson.unit}</span>
+                                <h2 class="font-display text-xl md:text-2xl font-bold text-slate-800">${lesson.title}</h2>
+                            </div>
+                        </div>
+
+                        <!-- Rule & Exam Trick Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Rule -->
+                            <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-4">
+                                <div class="flex items-center space-x-2 text-indigo-900 font-bold text-sm mb-1">
+                                    <i class="fa-solid fa-book"></i>
+                                    <span>The Rule</span>
+                                </div>
+                                <p class="text-xs md:text-sm text-slate-700 leading-relaxed">${lesson.rule}</p>
+                            </div>
+
+                            <!-- Exam Trick -->
+                            <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-4">
+                                <div class="flex items-center space-x-2 text-amber-900 font-bold text-sm mb-1">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    <span>The Exam Trick</span>
+                                </div>
+                                <p class="text-xs md:text-sm text-slate-700 leading-relaxed">${lesson.trick}</p>
+                            </div>
+                        </div>
+
+                        <!-- Practice Question Box -->
+                        <div class="bg-white border-2 border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="flex items-center space-x-2 text-slate-800 font-bold text-sm mb-3">
+                                <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-bold">🏋️ Practice Time</span>
+                                <span>Unanswered Challenge</span>
+                            </div>
+
+                            <p class="text-base md:text-lg font-bold text-slate-900 mb-4">${lesson.question}</p>
+
+                            <!-- Multiple Choice Options -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="options-grid">
+                                ${lesson.options.map((opt, idx) => `
+                                    <button onclick="handleAnswer(${idx})" class="w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/50 font-medium text-slate-700 transition flex items-center justify-between group">
+                                        <span class="text-sm">${opt}</span>
+                                        <i class="fa-regular fa-circle text-slate-300 group-hover:text-indigo-500"></i>
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // SLIDE B: ANSWER & STEP-BY-STEP REVEAL
+                container.innerHTML = `
+                    <div class="slide-enter slide-active space-y-6">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-lg">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">${lesson.unit} - Solution Step</span>
+                                    <h2 class="font-display text-xl md:text-2xl font-bold text-slate-800">${lesson.title}</h2>
+                                </div>
+                            </div>
+                            <span class="bg-indigo-50 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full border border-indigo-100">Eng. Sara T Olama</span>
+                        </div>
+
+                        <!-- Answer Breakdown Card -->
+                        <div class="bg-emerald-50/80 border-2 border-emerald-200 rounded-xl p-5">
+                            <div class="text-xs font-bold uppercase tracking-wider text-emerald-800 mb-1">Correct Answer Revealed</div>
+                            <div class="text-lg md:text-xl font-extrabold text-emerald-950 mb-3">${lesson.detailedSolution}</div>
+                            
+                            <div class="border-t border-emerald-200/60 pt-3">
+                                <h4 class="font-bold text-sm text-emerald-900 mb-1">Step-by-Step Breakdown & Trick Applied:</h4>
+                                <p class="text-xs md:text-sm text-slate-700 leading-relaxed">${lesson.explanation}</p>
+                            </div>
+                        </div>
+
+                        <!-- Next Navigation Button -->
+                        <div class="flex justify-end pt-2">
+                            <button onclick="nextStep()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-base px-8 py-3 rounded-xl shadow-md hover:shadow-indigo-200 transition flex items-center gap-2">
+                                <span>${currentStep < lessons.length - 1 ? 'Next Topic' : 'Proceed to Speed Round!'}</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function handleAnswer(selectedIndex) {
+            const lesson = lessons[currentStep];
+            if (selectedIndex === lesson.correctAnswer) {
+                playSound('correct');
+                score += 100 + (streak * 20);
+                streak++;
+            } else {
+                playSound('wrong');
+                streak = 0;
+            }
+            renderLessonSlide(currentStep, true); // Render Slide B (Answer Reveal)
+        }
+
+        function nextStep() {
+            playSound('click');
+            if (currentStep < lessons.length - 1) {
+                currentStep++;
+                renderLessonSlide(currentStep, false);
+            } else {
+                startSpeedRound();
+            }
+        }
+
+        // SPEED ROUND LOGIC (Slide 9)
+        function startSpeedRound() {
+            speedRoundIndex = 0;
+            speedRoundScore = 0;
+            speedRoundTimeLeft = 180; // 3 Minutes timer
+
+            document.getElementById('level-badge').innerText = `🏆 Slide 9: Speed Round!`;
+            
+            // Start Countdown Timer
+            if (speedRoundTimer) clearInterval(speedRoundTimer);
+            speedRoundTimer = setInterval(() => {
+                speedRoundTimeLeft--;
+                const timerElem = document.getElementById('speed-timer');
+                if (timerElem) {
+                    const mins = Math.floor(speedRoundTimeLeft / 60);
+                    const secs = speedRoundTimeLeft % 60;
+                    timerElem.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                }
+                if (speedRoundTimeLeft <= 0) {
+                    clearInterval(speedRoundTimer);
+                    renderVictoryScreen();
+                }
+            }, 1000);
+
+            renderSpeedQuestion();
+        }
+
+        function renderSpeedQuestion() {
+            const container = document.getElementById('slide-content');
+            
+            if (speedRoundIndex >= speedRoundQuestions.length) {
+                clearInterval(speedRoundTimer);
+                renderVictoryScreen();
+                return;
+            }
+
+            const qData = speedRoundQuestions[speedRoundIndex];
+
+            container.innerHTML = `
+                <div class="slide-enter slide-active space-y-6">
+                    <!-- Banner -->
+                    <div class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-4 text-white flex justify-between items-center shadow-md">
+                        <div class="flex items-center space-x-3">
+                            <div class="text-2xl animate-bounce">⚡</div>
+                            <div>
+                                <h3 class="font-display font-bold text-lg md:text-xl">Speed Round! Rapid-Fire Challenge</h3>
+                                <p class="text-xs text-amber-100">Teacher Note: Quick response mode!</p>
+                            </div>
+                        </div>
+                        <div class="bg-white/20 backdrop-blur-md border border-white/30 rounded-lg px-3 py-1 text-center">
+                            <span class="text-xs block font-medium">Time Left</span>
+                            <span id="speed-timer" class="font-mono font-bold text-lg">3:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Question Card -->
+                    <div class="bg-white border-2 border-amber-200 rounded-xl p-6 shadow-sm">
+                        <span class="text-xs font-bold text-amber-600 uppercase tracking-widest">Question ${speedRoundIndex + 1} of ${speedRoundQuestions.length}</span>
+                        <h3 class="text-lg md:text-xl font-bold text-slate-800 mt-1 mb-6">${qData.q}</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${qData.options.map((opt, i) => `
+                                <button onclick="handleSpeedAnswer(${i})" class="w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50/40 font-bold text-slate-700 transition flex justify-between items-center">
+                                    <span>${opt}</span>
+                                    <i class="fa-solid fa-bolt text-slate-300 hover:text-amber-500"></i>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleSpeedAnswer(selectedIdx) {
+            const qData = speedRoundQuestions[speedRoundIndex];
+            if (selectedIdx === qData.ans) {
+                playSound('correct');
+                score += 150;
+                speedRoundScore++;
+                streak++;
+            } else {
+                playSound('wrong');
+                streak = 0;
+            }
+            updateStats();
+            speedRoundIndex++;
+            renderSpeedQuestion();
+        }
+
+        // VICTORY & FINAL SUMMARY SCREEN (Slide 10)
+        function renderVictoryScreen() {
+            playSound('fanfare');
+            confetti({
+                particleCount: 120,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
+            document.getElementById('game-stats-bar').classList.add('hidden');
+            const container = document.getElementById('slide-content');
+
+            container.innerHTML = `
+                <div class="text-center py-4 px-2 slide-active flex flex-col items-center">
+                    <div class="w-20 h-20 bg-amber-100 border-4 border-amber-300 text-amber-600 rounded-full flex items-center justify-center text-4xl mb-4 shadow-xl animate-breath">
+                        🏆
+                    </div>
+
+                    <h1 class="font-display text-3xl md:text-4xl font-bold text-slate-800 mb-1">
+                        Mission Accomplished!
+                    </h1>
+                    <p class="text-sm text-indigo-600 font-bold mb-6">Exam Review Complete</p>
+
+                    <!-- Score Card Grid -->
+                    <div class="grid grid-cols-3 gap-3 max-w-md w-full mb-6">
+                        <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                            <span class="text-xs text-slate-500 block">Total Score</span>
+                            <span class="text-xl font-bold text-indigo-600">${score} XP</span>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                            <span class="text-xs text-slate-500 block">Speed Round</span>
+                            <span class="text-xl font-bold text-amber-600">${speedRoundScore}/${speedRoundQuestions.length}</span>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                            <span class="text-xs text-slate-500 block">Mastery Badge</span>
+                            <span class="text-xl font-bold text-emerald-600">A+</span>
+                        </div>
+                    </div>
+
+                    <!-- Slide 10 Special Title Box -->
+                    <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-5 max-w-lg w-full mb-6 text-center">
+                        <h3 class="font-display text-xl font-bold text-indigo-900 mb-1">
+                            🎮 Ready for More? Let's Play Some Games! 🕹️
+                        </h3>
+                        <p class="text-xs text-slate-600">You've unlocked the ultimate practice games mode!</p>
+                        <div class="mt-3 text-xs font-bold text-indigo-700">Signature: Eng. Sara T Olama</div>
+                    </div>
+
+                    <!-- Restart / Review Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button onclick="startGame()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <span>Replay Mission</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function triggerMascotTip() {
+            playSound('click');
+            const tips = [
+                "Tip: Always add ghost zeros when adding decimals!",
+                "Remember: 1 is NOT a prime number!",
+                "LCM is for events that happen together again!",
+                "GCF is used for splitting things into equal groups!"
+            ];
+            const speech = document.getElementById('mascot-speech');
+            const randomTip = tips[Math.floor(Math.random() * tips.length)];
+            speech.innerText = randomTip;
+        }
+    </script>
+</body>
+</html>
